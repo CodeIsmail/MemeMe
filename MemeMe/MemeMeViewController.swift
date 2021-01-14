@@ -31,53 +31,48 @@ class MemeMeViewController: UIViewController, UIImagePickerControllerDelegate,
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        initializeViews()
-        
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
-        subscribeToKeyboardNotifications()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        unSubscribeToKeyboardNotifications()
-    }
-
-    //MARK: initializeViews
-    private func initializeViews(){
-        topTextField.text = defaultTopText
-        topTextField.defaultTextAttributes = memeTextAttributes
-        topTextField.textAlignment = .center
-        topTextField.delegate = self
-        
-        bottomTextField.text = defaultBottomText
-        bottomTextField.defaultTextAttributes = memeTextAttributes
-        bottomTextField.textAlignment = .center
-        bottomTextField.delegate = self
+        initializeTextField(textField: topTextField, withText: defaultTopText)
+        initializeTextField(textField: bottomTextField, withText: defaultBottomText)
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareMeme))
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(resetMemeMe))
         navigationItem.leftBarButtonItem?.isEnabled = false
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        cameraButton.isEnabled = UIImagePickerController.isSourceTypeAvailable(.camera)
+        subscribeToKeyboardNotifications()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        unSubscribeToKeyboardNotifications()
+    }
+
+    //MARK: initializeViews
+    private func initializeTextField(textField: UITextField, withText defaultText: String){
+        textField.text = defaultText
+        textField.defaultTextAttributes = memeTextAttributes
+        textField.textAlignment = .center
+        textField.delegate = self
+    }
+    
     //MARK: Actions
     @IBAction func selectImageFromAlbum(_ sender: Any) {
-        
-        let imagePickerController = UIImagePickerController()
-        
-        imagePickerController.delegate = self
-        imagePickerController.sourceType = .photoLibrary
-        
-        present(imagePickerController, animated: true, completion: nil)
+        presentImagePickerWith(.photoLibrary)
         
     }
     @IBAction func selectImageFromCamera(_ sender: Any) {
+        presentImagePickerWith(.camera)
+    }
+    
+    private func presentImagePickerWith(_ sourceType: UIImagePickerController.SourceType){
         
         let imagePickerController = UIImagePickerController()
         
         imagePickerController.delegate = self
-        imagePickerController.sourceType = .camera
+        imagePickerController.sourceType = sourceType
         
         present(imagePickerController, animated: true, completion: nil)
     }
@@ -96,13 +91,13 @@ class MemeMeViewController: UIViewController, UIImagePickerControllerDelegate,
     @objc private func keyboardWillShow(_ notification: Notification){
         
         if bottomTextField.isEditing {
-            view.frame.origin.y -= getKeyboardHieght(notification)
+            view.frame.origin.y = -getKeyboardHieght(notification)
         }
     }
     
     @objc private func keyboardWillHide(_ notification: Notification){
         if bottomTextField.isEditing {
-            view.frame.origin.y += getKeyboardHieght(notification)
+            view.frame.origin.y = 0
         }
     }
     
